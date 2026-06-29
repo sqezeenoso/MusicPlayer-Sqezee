@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Sqezee Noso</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="style.css" />
+    <script
+      type="module"
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"
+    ></script>
+    <script
+      nomodule
+      src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"
+    ></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html-to-image/1.11.11/html-to-image.min.js"></script>
+  </head>
+  <body>
+    <div class="ambient">
+      <div class="ambient-blob a1" id="amb1"></div>
+      <div class="ambient-blob a2" id="amb2"></div>
+      <div class="ambient-blob a3" id="amb3"></div>
+    </div>
+
+    <header>
+      <div class="logo">Sqezee Noso <em>MUSIC</em></div>
+      <span class="hdr-badge">Liquid UI</span>
+    </header>
+
+    <div class="hero">
+      <h1>Play &amp;<br /><em>Preview</em></h1>
+      <p>
+        Upload MP3 kamu, putar langsung di browser, dan export MP4 kapan saja.
+        Tampilan sekarang lebih hidup dan elegan.
+      </p>
+    </div>
+
+    <div class="upload-section">
+      <div class="drop-zone" id="dropZone">
+        <input
+          type="file"
+          id="fileInput"
+          accept=".mp3,.wav,.ogg,.flac,.m4a,.aac,audio/*"
+          multiple
+        />
+        <div class="drop-icon">
+          <ion-icon name="musical-notes-outline"></ion-icon>
+        </div>
+        <div class="drop-title">Drag &amp; Drop lagu di sini</div>
+        <div class="drop-sub">atau klik untuk memilih file</div>
+        <div class="drop-formats">MP3 · WAV · OGG · FLAC · M4A</div>
+      </div>
+    </div>
+
+    <div class="player-section" id="playerSection">
+      <button class="btn-exit-fullscreen" id="btnExitFullscreen" onclick="toggleFullscreen()" title="Keluar Fullscreen">
+        <ion-icon name="close-outline"></ion-icon>
+      </button>
+      <div class="player-card" id="playerCard">
+        <button class="btn-fullscreen" id="btnFullscreen" onclick="toggleFullscreen()" title="Fullscreen">
+          <ion-icon id="fsIcon" name="scan-outline"></ion-icon>
+        </button>
+        <div class="cover-wrap" id="coverWrap" title="Klik untuk ganti cover">
+          <img id="coverImg" alt="cover" />
+          <div class="cover-ph" id="coverPh">
+            <ion-icon name="musical-notes"></ion-icon>
+          </div>
+          <div class="cover-edit-icon" title="Ganti Cover">
+            <ion-icon name="camera-outline"></ion-icon>
+          </div>
+        </div>
+        <div class="np-info">
+          <div class="np-badge"><span class="dot"></span> Now Playing</div>
+          <div class="np-title-container">
+            <div
+              class="np-title"
+              id="npTitle"
+              contenteditable="true"
+              spellcheck="false"
+            >
+              —
+            </div>
+            <button
+              class="btn-edit-text"
+              onclick="focusElement('npTitle')"
+              title="Edit Judul"
+            >
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="np-artist-container">
+            <div
+              class="np-artist"
+              id="npArtist"
+              contenteditable="true"
+              spellcheck="false"
+            >
+              —
+            </div>
+            <button
+              class="btn-edit-text"
+              onclick="focusElement('npArtist')"
+              title="Edit Artis"
+            >
+              <ion-icon name="create-outline"></ion-icon>
+            </button>
+          </div>
+          <div class="visualizer-wrap">
+            <canvas id="visCanvas"></canvas>
+            <div class="seek-overlay" id="seekOverlay"></div>
+          </div>
+          <div class="time-row">
+            <span id="timeCur">0:00</span>
+            <span id="timeTotal">0:00</span>
+          </div>
+          <div class="controls">
+            <div class="controls-row">
+              <button class="btn-ctrl" onclick="prevTrack()" title="Sebelumnya">
+                <ion-icon name="play-skip-back" style="font-size: 22px;"></ion-icon>
+              </button>
+              <button class="btn-play" id="btnPlay" onclick="togglePlay()">
+                <svg id="iPlay" width="22" height="22" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M8 5v14l11-7z" />
+                </svg>
+                <svg
+                  id="iPause"
+                  width="22"
+                  height="22"
+                  viewBox="0 0 24 24"
+                  fill="currentColor"
+                  style="display: none"
+                >
+                  <path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z" />
+                </svg>
+              </button>
+              <button class="btn-ctrl" onclick="nextTrack()" title="Berikutnya">
+                <ion-icon name="play-skip-forward" style="font-size: 22px;"></ion-icon>
+              </button>
+
+              <div class="settings-wrapper" style="position: relative; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <button
+                  class="btn-settings"
+                  id="btnSettings"
+                  onclick="toggleSpeedPanel()"
+                  title="Pengaturan Player"
+                >
+                  <ion-icon name="settings-outline"></ion-icon>
+                </button>
+
+                <div class="speed-panel" id="speedPanel">
+                <div class="speed-header">
+                  <span class="speed-label">Kecepatan</span>
+                  <span class="speed-value-badge" id="speedBadge">1.0×</span>
+                </div>
+
+                <div class="speed-slider-wrap">
+                  <div class="speed-track">
+                    <div class="speed-track-fill" id="speedTrackFill"></div>
+                  </div>
+                  <input
+                    type="range"
+                    class="speed-slider"
+                    id="speedSlider"
+                    min="0.25"
+                    max="3.0"
+                    step="0.05"
+                    value="1.0"
+                  />
+                </div>
+
+                <div class="speed-presets">
+                  <button class="speed-preset" onclick="setSpeed(0.5)">
+                    0.5×
+                  </button>
+                  <button class="speed-preset" onclick="setSpeed(0.75)">
+                    0.75×
+                  </button>
+                  <button class="speed-preset active" onclick="setSpeed(1.0)">
+                    1×
+                  </button>
+                  <button class="speed-preset" onclick="setSpeed(1.25)">
+                    1.25×
+                  </button>
+                  <button class="speed-preset" onclick="setSpeed(1.5)">
+                    1.5×
+                  </button>
+                  <button class="speed-preset" onclick="setSpeed(2.0)">
+                    2×
+                  </button>
+                </div>
+
+                <div class="orientation-section" style="margin-bottom: 16px; padding-top: 12px; border-top: 1px solid var(--glass-border);">
+                  <div class="speed-label" style="margin-bottom: 8px;">Orientasi Fullscreen</div>
+                  <div class="orientation-buttons" style="display: flex; gap: 8px;">
+                    <button class="orientation-btn" id="btnOrientPortrait" onclick="setOrientation('portrait')">
+                      <ion-icon name="smartphone-outline" style="font-size: 14px;"></ion-icon> Portrait
+                    </button>
+                    <button class="orientation-btn active" id="btnOrientLandscape" onclick="setOrientation('landscape')">
+                      <ion-icon name="phone-landscape-outline" style="font-size: 14px;"></ion-icon> Landscape
+                    </button>
+                  </div>
+                </div>
+
+                <div class="fade-settings-section" style="margin-bottom: 16px; padding-top: 12px; border-top: 1px solid var(--glass-border);">
+                  <!-- Header: label + satu toggle -->
+                  <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+                    <span class="speed-label">Efek Fade</span>
+                    <label class="fade-toggle-switch" for="fadeToggle" title="Aktifkan/nonaktifkan efek fade">
+                      <input type="checkbox" id="fadeToggle" checked onchange="toggleFade(this.checked)">
+                      <span class="fade-toggle-track"></span>
+                    </label>
+                  </div>
+
+                  <!-- Sliders: dikontrol oleh satu toggle di atas -->
+                  <div class="fade-controls-wrap" id="fadeAllControls" style="max-width: 100%; flex-direction: column; gap: 8px; align-items: stretch;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-size: 12px; color: var(--text-muted);">Fade In:</span>
+                      <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; max-width: 70%;">
+                        <input type="range" id="fadeInSlider" min="0.1" max="5" step="0.1" value="1.0" oninput="updateFadeIn(this.value)" style="width: 100%; accent-color: var(--accent2); cursor: pointer; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); border: none;">
+                        <span id="fadeInVal" style="font-size: 12px; min-width: 32px; text-align: right; font-weight: bold; color: var(--accent2);">1.0s</span>
+                      </div>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <span style="font-size: 12px; color: var(--text-muted);">Fade Out:</span>
+                      <div style="display: flex; align-items: center; gap: 8px; flex: 1; justify-content: flex-end; max-width: 70%;">
+                        <input type="range" id="fadeOutSlider" min="0.1" max="5" step="0.1" value="1.0" oninput="updateFadeOut(this.value)" style="width: 100%; accent-color: var(--accent2); cursor: pointer; height: 4px; border-radius: 2px; background: rgba(255,255,255,0.1); border: none;">
+                        <span id="fadeOutVal" style="font-size: 12px; min-width: 32px; text-align: right; font-weight: bold; color: var(--accent2);">1.0s</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pitch-row">
+                  <div>
+                    <div class="pitch-label">Pitch (otomatis)</div>
+                    <div class="pitch-val" id="pitchVal">Normal</div>
+                  </div>
+                  <button class="btn-reset-speed" onclick="setSpeed(1.0)">
+                    <svg
+                      width="12"
+                      height="12"
+                      viewBox="0 0 24 24"
+                      fill="currentColor"
+                    >
+                      <path
+                        d="M12 5V1L7 6l5 5V7c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z"
+                      />
+                    </svg>
+                    Reset
+                  </button>
+                </div>
+              </div>
+              </div>
+            </div>
+
+            <div class="vol-row">
+              <ion-icon
+                name="volume-mute-outline"
+                class="vol-icon"
+                id="volMute"
+                style="display: none"
+              ></ion-icon>
+              <ion-icon
+                name="volume-low-outline"
+                class="vol-icon"
+                id="volLow"
+              ></ion-icon>
+              <input
+                type="range"
+                class="vol-slider"
+                id="volSlider"
+                min="0"
+                max="1"
+                step="0.05"
+                value="0.8"
+              />
+              <ion-icon
+                name="volume-medium-outline"
+                class="vol-icon"
+                id="volMedium"
+              ></ion-icon>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section" id="trackSection" style="display: none">
+      <div class="section-header">
+        <span class="section-title">Daftar Lagu</span>
+        <div style="display: flex; align-items: center; gap: 12px;">
+          <span class="section-count" id="trackCount">0 lagu</span>
+          <button id="btnOpenExport" class="btn-ctrl" style="padding: 6px 12px; border-radius: 8px; font-size: 12px; font-family: 'Syne', sans-serif; font-weight: 700; width: auto; height: auto;">
+            <ion-icon name="videocam-outline" style="margin-right: 4px; font-size: 16px;"></ion-icon>
+            Export MP4
+          </button>
+        </div>
+      </div>
+      <div class="track-list" id="trackList"></div>
+    </div>
+
+    <footer class="footer">
+      <div style="margin-bottom: 12px; font-weight: 500;">
+        © 2026 Sqezee Noso | Music Player
+      </div>
+      <div class="footer-socials">
+        <a
+          href="https://www.youtube.com/@SqezeeNoSpelee_"
+          target="_blank"
+          class="footer-social"
+        >
+          <ion-icon name="logo-youtube"></ion-icon> SqezeeNoSpelee_
+        </a>
+        <a
+          href="https://www.instagram.com/akbardanaa_/"
+          target="_blank"
+          class="footer-social"
+        >
+          <ion-icon name="logo-instagram"></ion-icon> akbardanaa_
+        </a>
+        <a
+          href="https://www.tiktok.com/@sqezeenospelee_"
+          target="_blank"
+          class="footer-social"
+        >
+          <ion-icon name="logo-tiktok"></ion-icon> sqezeenospelee_
+        </a>
+      </div>
+    </footer>
+
+    <div class="toast" id="toast">
+      <span class="toast-icon">
+        <ion-icon name="checkmark-circle"></ion-icon>
+      </span>
+      <span id="toastMsg">Siap</span>
+    </div>
+
+    <input
+      type="file"
+      id="coverPicker"
+      accept="image/*"
+      style="display: none"
+    />
+
+    <audio id="audioEl" preload="metadata"></audio>
+
+    <!-- Export Modal -->
+    <div id="exportModal" class="export-modal">
+      <div class="export-modal-content" style="position: relative;">
+        <button id="btnCloseExportModal" style="position: absolute; top: 16px; right: 16px; background: none; border: none; font-size: 24px; color: var(--text-muted); cursor: pointer;" title="Tutup">
+          <ion-icon name="close"></ion-icon>
+        </button>
+        <h2 style="font-family: 'Syne', sans-serif; font-size: 24px; margin-bottom: 6px; padding-right: 32px;">Export Video</h2>
+        <p style="font-size: 12px; color: rgba(255,255,255,0.45); margin-bottom: 18px;">Direkam langsung di browser — tidak butuh server. Format: MP4/WebM.</p>
+        
+        <div class="export-form-group">
+          <label>Aspect Ratio</label>
+          <select id="exportAspect">
+            <option value="16:9">16:9 (Landscape)</option>
+            <option value="9:16">9:16 (Portrait)</option>
+          </select>
+        </div>
+        
+        <div class="export-form-group">
+          <label>Resolusi Video</label>
+          <select id="exportResolution">
+            <option value="1080p">1080p (Full HD - Rekomendasi)</option>
+            <option value="720p">720p (HD)</option>
+            <option value="480p">480p (SD)</option>
+            <option value="4k">4K (Ultra HD - Lambat)</option>
+          </select>
+        </div>
+        
+        <div class="export-form-group">
+          <label>FPS</label>
+          <select id="exportFps">
+            <option value="30">30 FPS</option>
+            <option value="60">60 FPS</option>
+          </select>
+        </div>
+        
+        <div style="display: flex; gap: 16px;">
+          <div class="export-form-group" style="flex: 1;">
+            <label>Start Time (Detik)</label>
+            <input type="number" id="exportStart" value="0" min="0" step="1">
+          </div>
+          <div class="export-form-group" style="flex: 1;">
+            <label>End Time (Detik)</label>
+            <input type="number" id="exportEnd" value="30" min="1" step="1">
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 16px;">
+          <div class="export-form-group" style="flex: 1;">
+            <label>Fade In (Detik)</label>
+            <input type="number" id="exportFadeIn" value="2" min="0" step="1">
+          </div>
+          <div class="export-form-group" style="flex: 1;">
+            <label>Fade Out (Detik)</label>
+            <input type="number" id="exportFadeOut" value="2" min="0" step="1">
+          </div>
+        </div>
+
+        <div id="exportProgressWrap" style="display: none; margin-top: 16px;">
+          <div style="font-size: 14px; margin-bottom: 8px; display: flex; justify-content: space-between;">
+            <span id="exportStatusText">Rendering...</span>
+            <span id="exportPercent">0%</span>
+          </div>
+          <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+            <div id="exportProgressBar" style="height: 100%; width: 0%; background: var(--accent); transition: width 0.3s ease;"></div>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button id="btnCancelExport" class="btn-ctrl" style="border-radius: 8px; padding: 10px 20px; width: auto; height: auto;">Batal</button>
+          <button id="btnStartExport" class="btn-play" style="border-radius: 8px; padding: 10px 24px; width: auto; height: auto; font-weight: bold; font-size: 14px;">Mulai Export</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="script.js"></script>
+  </body>
+</html>
